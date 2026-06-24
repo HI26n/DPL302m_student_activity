@@ -1,0 +1,104 @@
+NHẬN XÉT EDA (Exploratory Data Analysis)
+========================================
+Script  : eda.py
+Output  : logs/eda/
+Ngày    : Dự án Student Activity Classification — Group 3
+
+────────────────────────────────────────────────────────────────
+1. MỤC ĐÍCH VÀ PHẠM VI
+────────────────────────────────────────────────────────────────
+
+eda.py khảo sát dữ liệu trước khi training, gồm:
+  - Đếm số ảnh theo class ở các giai đoạn: raw, augmented, split
+  - Kiểm tra cân bằng class, tỉ lệ augment, tỉ lệ train/val/test
+  - Phân tích chất lượng ảnh raw: kích thước, độ sáng, độ tương phản, màu
+  - Phát hiện ảnh trùng lặp và data leakage giữa các split
+  - Xuất báo cáo văn bản, CSV và biểu đồ vào logs/eda/
+
+Đây là bước quan trọng giúp phát hiện sớm lỗi pipeline (thiếu ảnh, sai
+kích thước, mất cân bằng class) trước khi tốn thời gian train.
+
+────────────────────────────────────────────────────────────────
+2. KẾT QUẢ CHÍNH (từ lần chạy gần nhất)
+────────────────────────────────────────────────────────────────
+
+Số lượng ảnh gốc (raw) theo class:
+  - attentive  : 414 ảnh
+  - phone      : 414 ảnh
+  - laptop     : 513 ảnh
+  - sleeping   : 353 ảnh  ← ít nhất
+  - distracted : 451 ảnh
+  - Tổng raw   : 2.145 ảnh
+
+Sau augmentation (tỉ lệ aug/raw = 3.0 — mỗi ảnh gốc + 2 ảnh augment):
+  - attentive  : 1.242 ảnh
+  - phone      : 1.242 ảnh
+  - laptop     : 1.539 ảnh
+  - sleeping   : 1.059 ảnh
+  - distracted : 1.353 ảnh
+
+Chất lượng ảnh raw:
+  - Tất cả ảnh đúng kích thước 224×224
+  - Không có ảnh không đọc được (unreadable = 0)
+  - Không có ảnh sai shape (wrong_shape = 0)
+  - Không phát hiện file raw trùng lặp giữa các class
+
+Split dataset/split/ (train/val/test):
+  - Tất cả đều = 0 ảnh
+  - Nguyên nhân: pipeline hiện tại dùng split_by_person, không dùng
+    split_dataset.py → EDA chưa quét thư mục dataset/split_by_person/
+
+────────────────────────────────────────────────────────────────
+3. ĐIỂM MẠNH
+────────────────────────────────────────────────────────────────
+
+  (+) Phân tích đa chiều: số lượng, cân bằng, chất lượng ảnh, leakage
+  (+) Tự động xuất nhiều định dạng (txt, csv, png) — dễ đưa vào báo cáo
+  (+) Kiểm tra duplicate và leakage giữa train/val/test
+  (+) Có gợi ý hyperparameter (batch_size, epochs, lr) trong eda_report.txt
+  (+) Sample grid giúp review trực quan từng class
+
+────────────────────────────────────────────────────────────────
+4. HẠN CHẾ VÀ VẤN ĐỀ
+────────────────────────────────────────────────────────────────
+
+  (-) EDA chỉ nhìn dataset/split/, không phân tích dataset/split_by_person/
+      → Báo cáo "total_train_images: 0" và "No data" cho imbalance train
+        là KẾT QUẢ SAI với pipeline thực tế, không phải không có dữ liệu.
+
+  (-) Mất cân bằng nhẹ giữa class:
+        laptop (513) vs sleeping (353) — chênh ~45%
+      → Class sleeping có thể bị model học kém hơn.
+
+  (-) EDA không kiểm tra nhãn người (p1–p5) sau split_by_person.py
+      → Không phát hiện được p1 không đồng nhất giữa các class (nếu có).
+
+  (-) Gợi ý hyperparameter (batch=8, lr=0.001) không khớp train.py thực tế
+      (batch=32, lr=0.0001) vì tính trên split rỗng.
+
+────────────────────────────────────────────────────────────────
+5. KHUYẾN NGHỊ
+────────────────────────────────────────────────────────────────
+
+  1. Bổ sung DATA_ROOTS cho dataset/split_by_person/train|val|test
+     để EDA phản ánh đúng dữ liệu dùng khi train.
+
+  2. Thêm phân tích phân bố người (p1–p5) theo class sau khi gán nhãn.
+
+  3. Quay thêm video class sleeping để thu hẹp khoảng cách với laptop.
+
+  4. Chạy EDA sau mỗi lần thay đổi pipeline (extract, augment, split)
+     và so sánh eda_image_counts.csv giữa các lần chạy.
+
+────────────────────────────────────────────────────────────────
+6. KẾT LUẬN
+────────────────────────────────────────────────────────────────
+
+EDA cho thấy dữ liệu raw và augmented đạt chất lượng kỹ thuật tốt
+(đúng size, không lỗi đọc file, không duplicate). Tỉ lệ augment đồng
+đều 3× giữa các class. Điểm cần lưu ý nhất là class sleeping thiếu
+ảnh hơn các class khác, và script EDA cần cập nhật để phân tích đúng
+thư mục split_by_person thay vì split cũ.
+
+Đánh giá tổng thể: TỐT cho giai đoạn raw/augmented, CẦN CẬP NHẬT
+cho giai đoạn split theo người.

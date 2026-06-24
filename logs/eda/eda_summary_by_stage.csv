@@ -1,0 +1,6 @@
+class,augmented,raw,split_test,split_train,split_val
+attentive,1242,414,0,0,0
+distracted,1353,451,0,0,0
+laptop,1539,513,0,0,0
+phone,1242,414,0,0,0
+sleeping,1059,353,0,0,0

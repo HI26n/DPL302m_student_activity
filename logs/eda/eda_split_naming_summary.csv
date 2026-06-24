@@ -1,0 +1,16 @@
+split,class,total,raw_names,aug_names,other_names
+split_train,attentive,0,0,0,0
+split_train,phone,0,0,0,0
+split_train,laptop,0,0,0,0
+split_train,sleeping,0,0,0,0
+split_train,distracted,0,0,0,0
+split_val,attentive,0,0,0,0
+split_val,phone,0,0,0,0
+split_val,laptop,0,0,0,0
+split_val,sleeping,0,0,0,0
+split_val,distracted,0,0,0,0
+split_test,attentive,0,0,0,0
+split_test,phone,0,0,0,0
+split_test,laptop,0,0,0,0
+split_test,sleeping,0,0,0,0
+split_test,distracted,0,0,0,0

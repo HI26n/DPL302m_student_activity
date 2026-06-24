@@ -1,52 +1,17 @@
-# Large model files
-*.pt
-yolov8n.pt
+# dataset/split_by_person/ — không commit (tạo bởi pipeline)
+dataset/split_by_person/
 
-# Raw dataset (không cần thiết, chỉ giữ split)
-dataset/raw/
-dataset/augmented/
-dataset/review/
-
-# Videos
-videos/
-
-# Python cache
+# Python
 __pycache__/
 *.pyc
-*.pyo
-*.pyd
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
+yolov8n.pt
 
-# Virtual environments
-venv/
-ENV/
-env/
-
-# IDE
+# IDE / OS
 .vscode/
 .idea/
-*.swp
-*.swo
-*~
-
-# OS
 .DS_Store
 Thumbs.db
 
-# Logs (ngoại trừ các log quan trọng)
-*.log
+# Virtual env
+venv/
+env/

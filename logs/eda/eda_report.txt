@@ -1,0 +1,86 @@
+EDA REPORT
+==========
+
+Class count summary:
+stage       augmented  raw  split_test  split_train  split_val
+class                                                         
+attentive        1242  414           0            0          0
+distracted       1353  451           0            0          0
+laptop           1539  513           0            0          0
+phone            1242  414           0            0          0
+sleeping         1059  353           0            0          0
+
+Split ratios:
+stage       split_test  split_train  split_val
+class                                         
+attentive          0.0          0.0        0.0
+distracted         0.0          0.0        0.0
+laptop             0.0          0.0        0.0
+phone              0.0          0.0        0.0
+sleeping           0.0          0.0        0.0
+
+Augmentation ratio per class:
+            aug_to_raw_ratio
+class                       
+attentive                3.0
+distracted               3.0
+laptop                   3.0
+phone                    3.0
+sleeping                 3.0
+
+Split naming pattern summary saved.
+
+Raw class balance looks reasonable.
+
+Raw image stats saved and plotted.
+Raw shape and color summary statistics saved.
+
+Quality summary:
+      stage      class  count  unreadable  wrong_shape
+        raw  attentive    414           0            0
+        raw      phone    414           0            0
+        raw     laptop    513           0            0
+        raw   sleeping    353           0            0
+        raw distracted    451           0            0
+  augmented  attentive   1242           0            0
+  augmented      phone   1242           0            0
+  augmented     laptop   1539           0            0
+  augmented   sleeping   1059           0            0
+  augmented distracted   1353           0            0
+split_train  attentive      0           0            0
+split_train      phone      0           0            0
+split_train     laptop      0           0            0
+split_train   sleeping      0           0            0
+split_train distracted      0           0            0
+  split_val  attentive      0           0            0
+  split_val      phone      0           0            0
+  split_val     laptop      0           0            0
+  split_val   sleeping      0           0            0
+  split_val distracted      0           0            0
+ split_test  attentive      0           0            0
+ split_test      phone      0           0            0
+ split_test     laptop      0           0            0
+ split_test   sleeping      0           0            0
+ split_test distracted      0           0            0
+
+Raw duplicates detected within classes:
+No duplicate raw files found across classes.
+
+No split leakage or unexpected file naming detected.
+
+Sample grids created for raw and augmented if images exist.
+
+Class imbalance metrics (train set):
+  gini: 0
+  entropy: 0
+  imbalance_ratio: 1.0
+  recommendation: No data
+
+Model readiness recommendations:
+  total_train_images: 0
+  batch_size: 8
+  epochs: 50
+  learning_rate: 0.001
+  optimizer: Adam
+  metrics: ['accuracy', 'precision', 'recall', 'f1']
+  augmentation: RandAugment hoặc AutoAugment đã áp dụng

@@ -1,0 +1,7 @@
+{
+  "test_loss": 0.18176995238496196,
+  "test_acc": 97.01492537313433,
+  "test_dir": "dataset/split_by_person/test",
+  "model_path": "models\\best_model.pth",
+  "note": "Test set = raw images of p1 (seen in train) and p5 (unseen)"
+}

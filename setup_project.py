@@ -1,40 +1,55 @@
 """
 setup_project.py
 ================
-Chạy MỘT LẦN DUY NHẤT khi bắt đầu project.
-Tạo toàn bộ cấu trúc thư mục cần thiết.
+Chạy MỘT LẦN khi bắt đầu project — tạo cấu trúc thư mục.
 
-Cách chạy:
+Cách chạy (từ thư mục gốc):
     python setup_project.py
 """
 
 import os
+import sys
+from pathlib import Path
 
-CLASSES = ["attentive", "phone", "laptop", "sleeping", "distracted"]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from config.paths import CLASSES, PROJECT_ROOT
 
-folders = (
-    ["videos", "dataset/review", "models", "logs"]
-    + [f"dataset/raw/{c}"       for c in CLASSES]
+FOLDERS = (
+    ["videos", "models", "logs", "docs/reports"]
+    + ["logs/eda", "logs/training", "logs/evaluation"]
+    + ["scripts/data", "scripts/model", "config"]
+    + [f"dataset/raw/{c}" for c in CLASSES]
     + [f"dataset/augmented/{c}" for c in CLASSES]
-    + [f"dataset/split/train/{c}" for c in CLASSES]
-    + [f"dataset/split/val/{c}"   for c in CLASSES]
-    + [f"dataset/split/test/{c}"  for c in CLASSES]
+    + [f"dataset/review"]
+    + [f"dataset/split_by_person/train/{c}" for c in CLASSES]
+    + [f"dataset/split_by_person/val/{c}" for c in CLASSES]
+    + [f"dataset/split_by_person/test/{c}" for c in CLASSES]
 )
 
 print("Đang tạo cấu trúc thư mục...\n")
-for folder in folders:
-    os.makedirs(folder, exist_ok=True)
+for folder in FOLDERS:
+    os.makedirs(PROJECT_ROOT / folder, exist_ok=True)
 
-# In cây thư mục
+SKIP = {".git", "__pycache__", "node_modules", "dataset", "logs", "videos", "models"}
 print("✅ Hoàn tất! Cấu trúc project:\n")
-for root, dirs, files in os.walk("."):
-    dirs[:] = sorted([
-        d for d in dirs
-        if not d.startswith(".")
-        and d not in ("__pycache__", "node_modules")
-    ])
-    level  = root.replace(".", "").count(os.sep)
-    indent = "    " * level
-    print(f"{indent}{os.path.basename(root)}/")
-
-print("\n→ Bước tiếp theo: đặt video vào thư mục videos/ rồi chạy extract_frames.py")
+print(f"{PROJECT_ROOT.name}/")
+print("├── README.md")
+print("├── requirements.txt")
+print("├── setup_project.py")
+print("├── config/")
+print("├── scripts/")
+print("│   ├── data/          ← thu thập & xử lý dữ liệu")
+print("│   └── model/         ← EDA, train, evaluate")
+print("├── docs/              ← hướng dẫn chi tiết")
+print("├── videos/            ← đặt video quay (.mp4/.mov)")
+print("├── dataset/")
+print("│   ├── raw/")
+print("│   ├── augmented/")
+print("│   ├── review/")
+print("│   └── split_by_person/")
+print("├── models/            ← best_model.pth")
+print("└── logs/")
+print("    ├── eda/")
+print("    ├── training/")
+print("    └── evaluation/")
+print("\n→ Tiếp theo: xem README.md và chạy pipeline.")

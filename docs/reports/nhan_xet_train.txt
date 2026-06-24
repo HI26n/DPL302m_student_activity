@@ -1,0 +1,115 @@
+NHẬN XÉT TRAINING
+=================
+Script  : train.py
+Output  : logs/training/, models/best_model.pth
+Ngày    : Dự án Student Activity Classification — Group 3
+
+────────────────────────────────────────────────────────────────
+1. MỤC ĐÍCH VÀ PHƯƠNG PHÁP
+────────────────────────────────────────────────────────────────
+
+train.py huấn luyện mô hình phân loại 5 trạng thái học tập:
+  attentive | phone | laptop | sleeping | distracted
+
+Phương pháp:
+  - Transfer Learning: ResNet18 (pretrained ImageNet)
+  - Fine-tune lớp fully-connected cuối (512 → 5 classes)
+  - Optimizer: Adam (lr=0.0001, weight_decay=1e-5)
+  - Loss: CrossEntropyLoss
+  - Batch size: 32, tối đa 30 epochs
+  - Early stopping: patience = 5 (dừng nếu val acc không cải thiện)
+  - LR scheduler: ReduceLROnPlateau (giảm LR khi val acc đứng yên)
+
+Dữ liệu: dataset/split_by_person/
+  - Train : ảnh augment của p1, p2, p3, p4
+  - Val   : ảnh raw của p1 + p5 (chọn best model)
+  - Test  : ảnh raw của p1 + p5 (đánh giá cuối, không tham gia chọn model)
+
+Chống leakage: với p1, chia theo raw_idx — aug train và raw val/test
+không cùng nguồn ảnh gốc.
+
+Augmentation khi train (thêm trên train set):
+  RandomHorizontalFlip, RandomRotation(10°), ColorJitter
+
+────────────────────────────────────────────────────────────────
+2. KẾT QUẢ CHÍNH (từ lần chạy gần nhất)
+────────────────────────────────────────────────────────────────
+
+Lịch sử training (6 epochs trước khi early stopping):
+
+  Epoch | Train Loss | Train Acc | Val Loss | Val Acc
+  ------|------------|-----------|----------|--------
+    1   |   0.408    |  87.46%   |  0.187   | 96.95%  ← Best model
+    2   |   0.041    |  99.26%   |  0.152   | 94.66%
+    3   |   0.017    |  99.78%   |  0.190   | 93.13%
+    4   |   0.012    |  99.91%   |  0.212   | 91.98%
+    5   |   0.007    |  99.85%   |  0.209   | 91.60%
+    6   |   0.005    |  99.97%   |  0.191   | 93.13%
+
+Best model: epoch 1 — Val Acc = 96.95%
+Final test (sau training): Test Acc = 97.01%
+
+Nhận xét nhanh số liệu:
+  - Val acc cao nhất ngay epoch 1, sau đó train acc tăng mạnh nhưng val giảm
+    → Dấu hiệu overfitting sau epoch 1
+  - Early stopping đã chọn đúng epoch 1 (best val)
+  - Test acc (97.01%) gần val acc (96.95%) → không chênh lệch lớn giữa val/test
+
+────────────────────────────────────────────────────────────────
+3. ĐIỂM MẠNH
+────────────────────────────────────────────────────────────────
+
+  (+) Transfer learning phù hợp với dataset vừa (~ vài nghìn ảnh)
+  (+) Chia theo người (split_by_person) — đánh giá khả năng tổng quát
+      trên người đã thấy (p1) và người mới (p5)
+  (+) Đã xử lý leakage raw↔aug cho p1 (chia theo raw_idx)
+  (+) Có early stopping, LR scheduler, lưu best model theo val
+  (+) Tự động kiểm tra đường dẫn dữ liệu trước khi train
+  (+) Lưu đầy đủ: training_history.csv, training_curves.png,
+      training_config.json, final_test_results.json
+
+────────────────────────────────────────────────────────────────
+4. HẠN CHẾ VÀ VẤN ĐỀ
+────────────────────────────────────────────────────────────────
+
+  (-) Overfitting rõ: train acc ~100% từ epoch 2, val acc giảm từ 97% → 92%
+      → Model học thuộc train set, đặc biệt vì train dùng ảnh augment
+        còn val dùng ảnh raw (distribution khác nhau).
+
+  (-) Val acc > train acc ở epoch 1 (96.95% vs 87.46%):
+      Do train có augmentation nặng hơn (flip, rotate, jitter) khiến
+      train khó hơn val; không nhất thiết là leakage nếu đã fix split.
+
+  (-) Chỉ fine-tune lớp FC cuối — chưa unfreeze backbone ResNet18.
+      Có thể chưa tận dụng hết dữ liệu domain lớp học.
+
+  (-) Không có class weights — class sleeping ít ảnh hơn có thể bị thiệt.
+
+  (-) Không log riêng metric theo từng người (p1 vs p5) trong quá trình train.
+
+  (-) Early stopping dừng sớm (epoch 6) — có thể thử freeze/unfreeze theo
+      giai đoạn hoặc giảm augmentation train.
+
+────────────────────────────────────────────────────────────────
+5. KHUYẾN NGHỊ CẢI THIỆN
+────────────────────────────────────────────────────────────────
+
+  1. Thêm dropout hoặc tăng weight_decay để giảm overfitting.
+  2. Thử fine-tune 2–3 block cuối của ResNet18 thay vì chỉ lớp FC.
+  3. Dùng class_weight trong CrossEntropyLoss (ưu tiên sleeping).
+  4. Log val acc riêng cho p1 và p5 để đo khả năng generalize người mới.
+  5. Giảm augmentation khi train hoặc thêm augment nhẹ cho val (TTA) nếu
+     muốn so sánh công bằng hơn.
+  6. Thử ResNet34 hoặc EfficientNet nếu cần cải thiện thêm.
+
+────────────────────────────────────────────────────────────────
+6. KẾT LUẬN
+────────────────────────────────────────────────────────────────
+
+Training đạt kết quả tốt trên test set (97.01%) với pipeline split theo
+người đã được chuẩn hóa. Best model được chọn đúng ở epoch 1 nhờ early
+stopping. Tuy nhiên, khoảng cách train acc (~100%) và val acc (~92–97%)
+cho thấy model có xu hướng overfit — cần regularization mạnh hơn hoặc
+điều chỉnh augmentation nếu muốn model ổn định hơn khi triển khai thực tế.
+
+Đánh giá tổng thể: KẾT QUẢ TỐT, CẦN THEO DÕI OVERFITTING.

@@ -1,0 +1,18 @@
+{
+  "model_name": "resnet18",
+  "num_classes": 5,
+  "input_size": 224,
+  "batch_size": 32,
+  "epochs": 30,
+  "learning_rate": 0.0001,
+  "optimizer": "adam",
+  "weight_decay": 1e-05,
+  "early_stopping_patience": 5,
+  "data_root": "dataset/split_by_person",
+  "train_dir": "dataset/split_by_person/train",
+  "val_dir": "dataset/split_by_person/val",
+  "test_dir": "dataset/split_by_person/test",
+  "model_dir": "models",
+  "log_dir": "logs/training",
+  "split_strategy": "by_person: p1-p4 aug train, p1+p5 raw val/test, no raw\u2194aug leak"
+}

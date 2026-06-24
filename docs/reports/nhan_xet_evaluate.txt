@@ -1,0 +1,136 @@
+NHẬN XÉT EVALUATION
+====================
+Script  : evaluate.py
+Output  : logs/evaluation/
+Ngày    : Dự án Student Activity Classification — Group 3
+
+────────────────────────────────────────────────────────────────
+1. MỤC ĐÍCH VÀ PHƯƠNG PHÁP
+────────────────────────────────────────────────────────────────
+
+evaluate.py đánh giá model đã train trên tập test độc lập:
+  - Input  : models/best_model.pth (ResNet18, weights đã train)
+  - Data   : dataset/split_by_person/test/
+  - Metrics: Accuracy, Weighted F1, Precision/Recall/F1 từng class
+  - Output : confusion_matrix.png, evaluation_results.json,
+             classification_report.txt
+
+Test set gồm ảnh raw của 2 người:
+  - p1: đã xuất hiện trong train (dạng augment) — người quen
+  - p5: hoàn toàn không có trong train — người mới
+
+Mục tiêu: đo khả năng phân loại hành vi trên ảnh chưa augment, bao gồm
+cả trường hợp gặp người mới (p5).
+
+────────────────────────────────────────────────────────────────
+2. KẾT QUẢ CHÍNH (từ lần chạy gần nhất)
+────────────────────────────────────────────────────────────────
+
+Tổng quan:
+  - Overall Accuracy : 97.01%
+  - Weighted F1      : 0.9701
+  - Tổng mẫu test    : 268 ảnh
+
+Chi tiết từng class:
+
+  Class       | Precision | Recall | F1-score | Support
+  ------------|-----------|--------|----------|--------
+  attentive   |   0.970   |  0.941 |   0.955  |   68
+  phone       |   1.000   |  0.980 |   0.990  |   50
+  laptop      |   0.960   |  1.000 |   0.980  |   72
+  sleeping    |   1.000   |  1.000 |   1.000  |    4  ⚠️
+  distracted  |   0.959   |  0.959 |   0.959  |   74
+
+Macro avg   : Precision 0.978 | Recall 0.976 | F1 0.977
+Weighted avg: Precision 0.970 | Recall 0.970 | F1 0.970
+
+So sánh với train.py (final_test_results.json):
+  - Test acc từ train.py  : 97.01%
+  - Test acc từ evaluate.py: 97.01%
+  → Hai script cho kết quả nhất quán.
+
+────────────────────────────────────────────────────────────────
+3. PHÂN TÍCH THEO CLASS
+────────────────────────────────────────────────────────────────
+
+  attentive (recall 94.1% — thấp nhất):
+    Model đôi khi nhầm attentive sang class khác (thường laptop hoặc
+    distracted). Hợp lý vì trong lớp học nhiều người vừa mở laptop vừa
+    nhìn bảng — ranh giới class mờ.
+
+  phone (precision 100%, recall 98%):
+    Class dễ nhận diện nhất nhờ đặc trưng rõ (cầm điện thoại, cúi đầu).
+    1–2 mẫu bị miss có thể do góc camera không thấy điện thoại.
+
+  laptop (recall 100%, precision 96%):
+    Recall hoàn hảo nhưng có false positive — một số ảnh class khác bị
+    dự đoán nhầm là laptop.
+
+  sleeping (F1 = 100%, support = 4):
+    ⚠️ CHỈ 4 MẪU TEST — kết quả không có ý nghĩa thống kê.
+    Không nên kết luận model giỏi class sleeping dựa trên số liệu này.
+    Cần thêm dữ liệu sleeping trong tập test.
+
+  distracted (F1 = 95.9%):
+    Ổn định, cân bằng precision/recall. Nhầm lẫn có thể với attentive
+    khi người quay đầu nhẹ.
+
+────────────────────────────────────────────────────────────────
+4. ĐIỂM MẠNH
+────────────────────────────────────────────────────────────────
+
+  (+) Metrics đầy đủ: accuracy, F1, precision, recall từng class
+  (+) Confusion matrix trực quan — dễ đưa vào báo cáo/slide
+  (+) Lưu JSON + TXT — tiện so sánh giữa các lần train
+  (+) Dùng cùng preprocessing với val (resize 224, ImageNet normalize)
+  (+) Test set tách biệt hoàn toàn khỏi quá trình chọn model (best epoch)
+  (+) Kết quả khớp với final_test trong train.py — pipeline nhất quán
+
+────────────────────────────────────────────────────────────────
+5. HẠN CHẾ VÀ VẤN ĐỀ
+────────────────────────────────────────────────────────────────
+
+  (-) Không tách metric theo người (p1 vs p5):
+      Không biết model giỏi hơn trên người quen hay người mới.
+      Đây là metric quan trọng nhất của split_by_person.
+
+  (-) Class sleeping quá ít mẫu test (n=4):
+      Kết quả 100% không đáng tin cậy.
+
+  (-) Không có confidence score / ROC / calibration analysis.
+
+  (-) Không phân tích confusion theo từng cặp class dễ nhầm (heatmap
+      chi tiết hoặc misclassified examples).
+
+  (-) evaluate.py duplicate code Dataset/Model từ train.py — dễ lệch
+      nếu một bên thay đổi mà bên kia không cập nhật.
+
+  (-) Test set gồm cả p1 (seen) lẫn p5 (unseen) — accuracy tổng có thể
+      che giấu performance kém trên p5.
+
+────────────────────────────────────────────────────────────────
+6. KHUYẾN NGHỊ CẢI THIỆN
+────────────────────────────────────────────────────────────────
+
+  1. Bổ sung báo cáo riêng: accuracy/F1 trên p1 vs p5 trong test set.
+  2. Tăng số mẫu sleeping trong test (quay thêm video hoặc điều chỉnh split).
+  3. Lưu danh sách ảnh bị phân loại sai để review thủ công.
+  4. Thêm macro F1 vào kết luận chính (hiện chỉ in weighted F1 nổi bật).
+  5. Tách module dataset/model chung (utils.py) để train và evaluate đồng bộ.
+  6. Thử Test-Time Augmentation (TTA) để so sánh robustness.
+
+────────────────────────────────────────────────────────────────
+7. KẾT LUẬN
+────────────────────────────────────────────────────────────────
+
+Model đạt 97.01% accuracy trên test set — kết quả tốt cho bài toán 5 class
+trong môi trường lớp học. Phone và laptop được nhận diện ổn định nhất;
+attentive có recall thấp hơn một chút do overlap hành vi với laptop/
+distracted. Kết quả sleeping (100%) không nên dùng làm bằng chứng chính
+vì chỉ có 4 mẫu test.
+
+Để đánh giá đầy đủ hơn trong báo cáo, nên bổ sung metric tách theo người
+(p1 seen vs p5 unseen) và ghi rõ hạn chế về class sleeping.
+
+Đánh giá tổng thể: KẾT QUẢ TỐT, CẦN BỔ SUNG PHÂN TÍCH THEO NGƯỜI
+VÀ TĂNG MẪU SLEEPING.

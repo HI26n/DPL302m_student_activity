@@ -1,0 +1,16 @@
+split,class,total,raw_names,aug_names,other_names
+split_train,attentive,828,0,828,0
+split_train,phone,828,0,828,0
+split_train,laptop,1026,0,1026,0
+split_train,sleeping,706,0,706,0
+split_train,distracted,902,0,902,0
+split_val,attentive,207,207,0,0
+split_val,phone,207,207,0,0
+split_val,laptop,256,256,0,0
+split_val,sleeping,176,176,0,0
+split_val,distracted,225,225,0,0
+split_test,attentive,207,207,0,0
+split_test,phone,207,207,0,0
+split_test,laptop,257,257,0,0
+split_test,sleeping,177,177,0,0
+split_test,distracted,226,226,0,0
